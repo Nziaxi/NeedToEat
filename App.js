@@ -1,12 +1,13 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
+  FlatList,
+  Image,
+  ImageBackground,
   ScrollView,
   StyleSheet,
   Text,
-  View,
-  Image,
-  ImageBackground,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import {
   HambergerMenu,
@@ -18,7 +19,7 @@ import {
   Notification,
   ArrowDown2,
 } from 'iconsax-react-native';
-import theme, {COLORS, SIZES, FONTS} from './assets/constant';
+import theme, {COLORS, SIZES, FONTS, categoryList} from './assets/constant';
 
 // ===== App =====
 export default function App() {
@@ -102,25 +103,7 @@ const Content = () => {
 
       {/* Category */}
       <View style={{marginTop: 8}}>
-        <ScrollView showsHorizontalScrollIndicator={false} horizontal>
-          <View style={{...category.item, marginLeft: 24}}>
-            <Text style={{...category.title, color: COLORS.primary}}>
-              Popular
-            </Text>
-          </View>
-          <View style={category.item}>
-            <Text style={category.title}>Recommended</Text>
-          </View>
-          <View style={category.item}>
-            <Text style={category.title}>Discount</Text>
-          </View>
-          <View style={category.item}>
-            <Text style={category.title}>Favorite</Text>
-          </View>
-          <View style={category.item}>
-            <Text style={category.title}>Latest Order</Text>
-          </View>
-        </ScrollView>
+        <FlatListCategory />
       </View>
 
       {/* Food Browse */}
@@ -142,21 +125,6 @@ const Content = () => {
         contentContainerStyle={{gap: 15}}>
         <View>
           <View style={itemHorizontal.row}>
-            {/* <TouchableOpacity
-                style={{...itemHorizontal.cardItem, marginLeft: 24}}>
-                <Image
-                  imageStyle={{borderRadius: 15}}
-                  style={itemHorizontal.cardImage}
-                  source={{
-                    uri: 'https://thumbs.dreamstime.com/b/vector-cartoon-illustration-paper-maps-colorful-modern-style-vector-cartoon-illustration-paper-maps-colorful-modern-109592765.jpg',
-                  }}
-                />
-                <View style={itemHorizontal.cardContent}>
-                  <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                    Near Me
-                  </Text>
-                </View>
-              </TouchableOpacity> */}
             <TouchableOpacity
               style={{...itemHorizontal.cardItem, marginLeft: 24}}>
               <Image
@@ -443,6 +411,78 @@ const Content = () => {
         </TouchableOpacity>
       </View>
     </ScrollView>
+  );
+};
+
+// ===== Content Components (Category) =====
+const ItemCategory = ({item, onPress, color}) => {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <View style={category.item}>
+        <Text style={{...category.title, color}}>{item.categoryName}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const FlatListCategory = () => {
+  const [selected, setSelected] = useState(1);
+  const renderItem = ({item}) => {
+    const color = item.id === selected ? COLORS.primary : COLORS.grey;
+    return (
+      <ItemCategory
+        item={item}
+        onPress={() => setSelected(item.id)}
+        color={color}
+      />
+    );
+  };
+  return (
+    <FlatList
+      data={categoryList}
+      keyExtractor={item => item.id}
+      renderItem={item => renderItem({...item})}
+      contentContainerStyle={{paddingHorizontal: 18}}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+    />
+  );
+};
+
+// ===== Content Components (Browse cuisines) =====
+
+// ===== Content Components (Food Menu) =====
+const MenuList = () => {
+  // Category Selected Item
+  const [selectedMenuType, setSelectedMenuType] = React.useState(1);
+  const [menuList, setMenuList] = React.useState([]);
+
+  React.useEffect(() => {
+    handleChangeCategory(selectedCategoryId, selectedMenuType);
+  }, []);
+
+  // Handler
+  function handleChangeCategory(categoryId, menuTypeId) {
+    // Find the menu based on the menuTypeId
+    let selectedMenu = dummyData.menuList.find(m => m.id == menuTypeId);
+
+    // Set the menu based on the categoryId
+    setMenuList(
+      selectedMenu?.list.filter(m => m.categories.include(categoryId)),
+    );
+  }
+  const renderItem = ({item}) => {
+    return <ItemCategory item={item} onPress={() => setSelected(item.id)} />;
+  };
+  return (
+    <FlatList
+      data={menuList}
+      keyExtractor={item => item.categories}
+      showsVerticalScrollIndicator={false}
+      renderItem={({item}) => {
+        return <Text>{item.name}</Text>;
+      }}
+    />
   );
 };
 
