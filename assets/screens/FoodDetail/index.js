@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {
   Image,
   ScrollView,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import {
   ArrowLeft2,
   Heart,
@@ -15,14 +16,18 @@ import {
   Minus,
   Add,
 } from 'iconsax-react-native';
-import theme, {COLORS, SIZES, FONTS, categoryList} from '../../constant';
+import theme, {COLORS, SIZES, FONTS, menuList} from '../../constant';
 
-const FoodDetail = () => {
+const FoodDetail = ({route}) => {
+  const {foodId} = route.params;
+  const selectedFood = menuList.find(food => food.id === foodId);
+  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <ArrowLeft2 size="24" color={COLORS.black} />
         </TouchableOpacity>
         <Text style={{...styles.title, fontSize: 18}}>DETAIL</Text>
@@ -37,7 +42,7 @@ const FoodDetail = () => {
         <View style={styles.content}>
           <Image
             source={{
-              uri: 'https://cdns.klimg.com/merdeka.com/i/w/news/2021/11/29/1381128/content_images/670x335/20211129112556-2-7-cara-membuat-ayam-teriyaki-enak-dan-praktis-cocok-untuk-menu-makan-siang-004-ayu-isti.jpg',
+              uri: selectedFood.image,
             }}
             style={styles.card}
           />
@@ -52,7 +57,7 @@ const FoodDetail = () => {
               color: COLORS.black,
               ...FONTS.h1,
             }}>
-            Ayam Teriyaki
+            {selectedFood.name}
           </Text>
           <Text
             style={{
@@ -63,8 +68,7 @@ const FoodDetail = () => {
               textAlign: 'justify',
               ...FONTS.body3,
             }}>
-            Ayam Teriyaki adalah hidangan Jepang yang terdiri dari ayam panggang
-            dengan saus manis Teriyaki yang khas.
+            {selectedFood.comDescription}
           </Text>
         </View>
 
@@ -98,7 +102,7 @@ const FoodDetail = () => {
                 color: COLORS.black,
                 top: 2,
               }}>
-              4.5
+              {selectedFood.rating}
             </Text>
           </View>
 
@@ -122,7 +126,7 @@ const FoodDetail = () => {
                 top: 2,
                 left: 2,
               }}>
-              15 Mins
+              {selectedFood.duration} Mins
             </Text>
           </View>
           {/* Calories */}
@@ -151,7 +155,7 @@ const FoodDetail = () => {
                 top: 2,
                 left: 2,
               }}>
-              375 kal
+              {selectedFood.calories} kal
             </Text>
           </View>
         </View>

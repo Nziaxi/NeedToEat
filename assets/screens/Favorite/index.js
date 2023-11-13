@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {Home, BagHappy, Heart, Notification} from 'iconsax-react-native';
+import {Heart} from 'iconsax-react-native';
 import theme, {COLORS, SIZES, FONTS} from '../../constant';
 
 const Favorite = () => {
@@ -18,7 +18,6 @@ const Favorite = () => {
         <Text style={styles.title}>Favorite</Text>
       </View>
       <Content />
-      <Footer />
     </View>
   );
 };
@@ -120,34 +119,6 @@ const Content = () => {
   );
 };
 
-const Footer = () => {
-  return (
-    <View style={footer.container}>
-      <TouchableOpacity style={footer.item}>
-        <Home size="24" color={COLORS.black} style={footer.icon} />
-        <Text style={footer.text}> Home </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={footer.item}>
-        <BagHappy size="24" color={COLORS.black} style={footer.icon} />
-        <Text style={footer.text}> Order </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={footer.item}>
-        <Heart
-          size="24"
-          color={COLORS.primary}
-          style={footer.icon}
-          variant="Broken"
-        />
-        <Text style={{...footer.text, color: COLORS.primary}}> Favorite </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={footer.item}>
-        <Notification size="24" color={COLORS.black} style={footer.icon} />
-        <Text style={footer.text}> Notification </Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
-
 export default Favorite;
 
 const styles = StyleSheet.create({
@@ -222,30 +193,5 @@ const content = StyleSheet.create({
     color: COLORS.darkGray2,
     fontFamily: 'Poppins-Regular',
     fontSize: 12,
-  },
-});
-const footer = StyleSheet.create({
-  container: {
-    marginTop: 4,
-    marginBottom: 2,
-    paddingHorizontal: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 50,
-  },
-  item: {
-    flex: 1,
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  text: {
-    fontFamily: 'Poppins-Regular',
-    fontSize: 13,
-    color: COLORS.black,
-  },
-  icon: {
-    width: 30,
-    height: 30,
   },
 });

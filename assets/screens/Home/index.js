@@ -9,17 +9,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import {
   HambergerMenu,
   Bill,
   SearchNormal1,
-  Home,
-  BagHappy,
-  Heart,
-  Notification,
   ArrowDown2,
 } from 'iconsax-react-native';
 import theme, {COLORS, SIZES, FONTS, categoryList} from '../../constant';
+import {menuList} from '../../constant';
 
 // ===== App =====
 export default function Homepage() {
@@ -27,7 +25,6 @@ export default function Homepage() {
     <View style={styles.container}>
       <Header />
       <Content />
-      <Footer />
     </View>
   );
 }
@@ -271,144 +268,10 @@ const Content = () => {
         <Text style={itemVertical.subTitle}>
           Good food, good mood, good day!
         </Text>
-        <TouchableOpacity style={itemVertical.card}>
-          <Image
-            source={{
-              uri: 'https://cdns.klimg.com/merdeka.com/i/w/news/2021/11/29/1381128/content_images/670x335/20211129112550-1-bumbu-oles-ayam-bakar-lengkap-dengan-resepnya-mudah-dipraktikkan-008-ayu-isti.jpg',
-            }}
-            style={itemVertical.cardImage}
-          />
-          <View style={{flex: 1}}>
-            {/* Name */}
-            <Text style={itemVertical.cardTitle}>Ayam Bakar Madu</Text>
-            {/* Description */}
-            <Text style={itemVertical.cardSubTitle}>
-              Ayam dengan bumbu madu
-            </Text>
-            {/* Price */}
-            <Text style={itemVertical.cardPrice}>Rp51.000</Text>
-          </View>
 
-          {/* Calories */}
-          <View style={itemVertical.cardCalories}>
-            <Image
-              source={{
-                uri: 'https://raw.githubusercontent.com/byprogrammers/LCRN16-food-delivery-app-lite-starter/master/assets/icons/calories.png',
-              }}
-              style={{width: 22, height: 22}}
-            />
-            <Text style={itemVertical.cardCaloriesText}>275 kal</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={itemVertical.card}>
-          <Image
-            source={{
-              uri: 'https://cdns.klimg.com/merdeka.com/i/w/news/2021/11/29/1381128/content_images/670x335/20211129112554-4-ilustrasi-ayam-goreng-lengkuas-001-tantri-setyorini.jpg',
-            }}
-            style={itemVertical.cardImage}
-          />
-          <View style={{flex: 1}}>
-            <Text style={itemVertical.cardTitle}>Ayam Goreng Lengkuas</Text>
-            {/* Description */}
-            <Text style={itemVertical.cardSubTitle}>
-              Ayam goreng khas Sunda
-            </Text>
-            {/* Price */}
-            <Text style={itemVertical.cardPrice}>Rp15.000</Text>
-          </View>
-
-          {/* Calories */}
-          <View style={itemVertical.cardCalories}>
-            <Image
-              source={{
-                uri: 'https://raw.githubusercontent.com/byprogrammers/LCRN16-food-delivery-app-lite-starter/master/assets/icons/calories.png',
-              }}
-              style={{width: 22, height: 22}}
-            />
-            <Text style={itemVertical.cardCaloriesText}>260 kal</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={itemVertical.card}>
-          <Image
-            source={{
-              uri: 'https://cdns.klimg.com/merdeka.com/i/w/news/2021/11/29/1381128/content_images/670x335/20211129112556-2-7-cara-membuat-ayam-teriyaki-enak-dan-praktis-cocok-untuk-menu-makan-siang-004-ayu-isti.jpg',
-            }}
-            style={itemVertical.cardImage}
-          />
-          <View style={{flex: 1}}>
-            <Text style={itemVertical.cardTitle}>Ayam Teriyaki</Text>
-            {/* Description */}
-            <Text style={itemVertical.cardSubTitle}>
-              Ayam bumbu khas Jepang
-            </Text>
-            {/* Price */}
-            <Text style={itemVertical.cardPrice}>Rp24.000</Text>
-          </View>
-
-          {/* Calories */}
-          <View style={itemVertical.cardCalories}>
-            <Image
-              source={{
-                uri: 'https://raw.githubusercontent.com/byprogrammers/LCRN16-food-delivery-app-lite-starter/master/assets/icons/calories.png',
-              }}
-              style={{width: 22, height: 22}}
-            />
-            <Text style={itemVertical.cardCaloriesText}>375 kal</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={itemVertical.card}>
-          <Image
-            source={{
-              uri: 'https://cdns.klimg.com/merdeka.com/i/w/news/2021/11/29/1381128/content_images/670x335/20211129112557-3-cara-bikin-ayam-geprek-003-khulafa-pinta-winastya.jpg',
-            }}
-            style={itemVertical.cardImage}
-          />
-          <View style={{flex: 1}}>
-            <Text style={itemVertical.cardTitle}>Ayam Geprek</Text>
-            {/* Description */}
-            <Text style={itemVertical.cardSubTitle}>Ayam yang digeprek</Text>
-            {/* Price */}
-            <Text style={itemVertical.cardPrice}>Rp21.000</Text>
-          </View>
-
-          {/* Calories */}
-          <View style={itemVertical.cardCalories}>
-            <Image
-              source={{
-                uri: 'https://raw.githubusercontent.com/byprogrammers/LCRN16-food-delivery-app-lite-starter/master/assets/icons/calories.png',
-              }}
-              style={{width: 22, height: 22}}
-            />
-            <Text style={itemVertical.cardCaloriesText}>246 kal</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={itemVertical.card}>
-          <Image
-            source={{
-              uri: 'https://akcdn.detik.net.id/community/media/visual/2020/09/17/sate-lilit-ayam-khas-bali-1.jpeg?w=700&q=90',
-            }}
-            style={itemVertical.cardImage}
-          />
-          <View style={{flex: 1}}>
-            {/* Name */}
-            <Text style={itemVertical.cardTitle}>Sate Lilit Ayam</Text>
-            {/* Description */}
-            <Text style={itemVertical.cardSubTitle}>Varian sate asal Bali</Text>
-            {/* Price */}
-            <Text style={itemVertical.cardPrice}>Rp29.000</Text>
-          </View>
-
-          {/* Calories */}
-          <View style={itemVertical.cardCalories}>
-            <Image
-              source={{
-                uri: 'https://raw.githubusercontent.com/byprogrammers/LCRN16-food-delivery-app-lite-starter/master/assets/icons/calories.png',
-              }}
-              style={{width: 22, height: 22}}
-            />
-            <Text style={itemVertical.cardCaloriesText}>60 kal</Text>
-          </View>
-        </TouchableOpacity>
+        {menuList.map(item => (
+          <MenuList key={item.id} item={item} />
+        ))}
       </View>
     </ScrollView>
   );
@@ -452,66 +315,38 @@ const FlatListCategory = () => {
 // ===== Content Components (Browse cuisines) =====
 
 // ===== Content Components (Food Menu) =====
-// const MenuList = () => {
-//   // Category Selected Item
-//   const [selectedMenuType, setSelectedMenuType] = React.useState(1);
-//   const [menuList, setMenuList] = React.useState([]);
-
-//   React.useEffect(() => {
-//     handleChangeCategory(selectedCategoryId, selectedMenuType);
-//   }, []);
-
-//   // Handler
-//   function handleChangeCategory(categoryId, menuTypeId) {
-//     // Find the menu based on the menuTypeId
-//     let selectedMenu = dummyData.menuList.find(m => m.id == menuTypeId);
-
-//     // Set the menu based on the categoryId
-//     setMenuList(
-//       selectedMenu?.list.filter(m => m.categories.include(categoryId)),
-//     );
-//   }
-//   const renderItem = ({item}) => {
-//     return <ItemCategory item={item} onPress={() => setSelected(item.id)} />;
-//   };
-//   return (
-//     <FlatList
-//       data={menuList}
-//       keyExtractor={item => item.categories}
-//       showsVerticalScrollIndicator={false}
-//       renderItem={({item}) => {
-//         return <Text>{item.name}</Text>;
-//       }}
-//     />
-//   );
-// };
-
-// ===== Footer =====
-const Footer = () => {
+const MenuList = ({item}) => {
+  const navigation = useNavigation();
   return (
-    <View style={footer.container}>
-      <TouchableOpacity style={footer.item}>
-        <Home
-          size="24"
-          color={COLORS.primary}
-          style={footer.icon}
-          variant="Broken"
+    <TouchableOpacity
+      style={itemVertical.card}
+      onPress={() => navigation.navigate('FoodDetail', {foodId: item.id})}>
+      <Image
+        source={{
+          uri: item.image,
+        }}
+        style={itemVertical.cardImage}
+      />
+      <View style={{flex: 1}}>
+        {/* Name */}
+        <Text style={itemVertical.cardTitle}>{item.name}</Text>
+        {/* Description */}
+        <Text style={itemVertical.cardSubTitle}>{item.description}</Text>
+        {/* Price */}
+        <Text style={itemVertical.cardPrice}>{item.price}</Text>
+      </View>
+
+      {/* Calories */}
+      <View style={itemVertical.cardCalories}>
+        <Image
+          source={{
+            uri: 'https://raw.githubusercontent.com/byprogrammers/LCRN16-food-delivery-app-lite-starter/master/assets/icons/calories.png',
+          }}
+          style={{width: 22, height: 22}}
         />
-        <Text style={{...footer.text, color: COLORS.primary}}> Home </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={footer.item}>
-        <BagHappy size="24" color={COLORS.black} style={footer.icon} />
-        <Text style={footer.text}> Order </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={footer.item}>
-        <Heart size="24" color={COLORS.black} style={footer.icon} />
-        <Text style={footer.text}> Favorite </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={footer.item}>
-        <Notification size="24" color={COLORS.black} style={footer.icon} />
-        <Text style={footer.text}> Notification </Text>
-      </TouchableOpacity>
-    </View>
+        <Text style={itemVertical.cardCaloriesText}>{item.calories}</Text>
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -689,31 +524,5 @@ const itemVertical = StyleSheet.create({
     color: COLORS.darkGray2,
     fontFamily: 'Poppins-Regular',
     fontSize: 12,
-  },
-});
-
-const footer = StyleSheet.create({
-  container: {
-    marginTop: 4,
-    marginBottom: 2,
-    paddingHorizontal: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 50,
-  },
-  item: {
-    flex: 1,
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  text: {
-    fontFamily: 'Poppins-Regular',
-    fontSize: 13,
-    color: COLORS.black,
-  },
-  icon: {
-    width: 30,
-    height: 30,
   },
 });

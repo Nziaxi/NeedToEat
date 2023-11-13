@@ -89,9 +89,13 @@ export const menuList = [
     id: 1,
     name: 'Ayam Bakar Madu',
     description: 'Ayam dengan bumbu madu',
+    comDescription:
+      'Ayam Bakar Madu adalah makanan olahan yang berasal dari bahan utama berupa ayam yang dibakar dengan bumbu madu.',
     categories: [1, 3],
+    rating: 4.3,
     price: 'Rp51.000',
     calories: 275,
+    duration: 20,
     isFavorite: true,
     image:
       'https://cdns.klimg.com/merdeka.com/i/w/news/2021/11/29/1381128/content_images/670x335/20211129112550-1-bumbu-oles-ayam-bakar-lengkap-dengan-resepnya-mudah-dipraktikkan-008-ayu-isti.jpg',
@@ -100,9 +104,13 @@ export const menuList = [
     id: 2,
     name: 'Ayam Goreng Lengkuas',
     description: 'Ayam goreng khas Sunda',
+    comDescription:
+      'Ayam Goreng Lengkuas adalah makanan dengan bahan dasar menggunakan bumbu seperti lengkuas parut, kunyit, bawang putih, dan serai untuk menciptakan rasa gurih yang khas.',
     categories: [1, 3],
+    rating: 3.5,
     price: 'Rp15.000',
     calories: 260,
+    duration: 15,
     isFavorite: false,
     image:
       'https://cdns.klimg.com/merdeka.com/i/w/news/2021/11/29/1381128/content_images/670x335/20211129112554-4-ilustrasi-ayam-goreng-lengkuas-001-tantri-setyorini.jpg',
@@ -111,9 +119,13 @@ export const menuList = [
     id: 3,
     name: 'Ayam Teriyaki',
     description: 'Ayam bumbu khas Jepang',
+    comDescription:
+      'Ayam Teriyaki adalah hidangan Jepang yang terdiri dari ayam panggang dengan saus manis Teriyaki yang khas.',
     categories: [1, 3],
+    rating: 4.5,
     price: 'Rp24.000',
     calories: 375,
+    duration: 15,
     isFavorite: false,
     image:
       'https://cdns.klimg.com/merdeka.com/i/w/news/2021/11/29/1381128/content_images/670x335/20211129112556-2-7-cara-membuat-ayam-teriyaki-enak-dan-praktis-cocok-untuk-menu-makan-siang-004-ayu-isti.jpg',
@@ -122,9 +134,13 @@ export const menuList = [
     id: 4,
     name: 'Ayam Geprek',
     description: 'Ayam yang digeprek',
+    comDescription:
+      'Ayam Geprek adalah ayam goreng yang dipukul dan ditekan menggunakan ulekan dan dicampur dengan sambal.',
     categories: [1, 3],
+    rating: 4.5,
     price: 'Rp21.000',
     calories: 246,
+    duration: 10,
     isFavorite: true,
     image:
       'https://cdns.klimg.com/merdeka.com/i/w/news/2021/11/29/1381128/content_images/670x335/20211129112557-3-cara-bikin-ayam-geprek-003-khulafa-pinta-winastya.jpg',
@@ -133,9 +149,13 @@ export const menuList = [
     id: 5,
     name: 'Sate Lilit Ayam',
     description: 'Varian sate asal Bali',
+    comDescription:
+      'Sate lilit khas Bali yang dibuat dari daging ayam dengan rasa gurih daging ayam menyatu dengan bumbu genep yang pedas menyengat.',
     categories: [1, 5],
+    rating: 5,
     price: 'Rp29.000',
     calories: 60,
+    duration: 20,
     isFavorite: true,
     image:
       'https://akcdn.detik.net.id/community/media/visual/2020/09/17/sate-lilit-ayam-khas-bali-1.jpeg?w=700&q=90',

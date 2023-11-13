@@ -1,5 +1,10 @@
 import * as React from 'react';
-import {Homepage, FoodDetail, Favorite} from './assets/screens';
+import {NavigationContainer} from '@react-navigation/native';
+import Router from './assets/navigation/Router';
 export default function App() {
-  return <Favorite />;
+  return (
+    <NavigationContainer>
+      <Router />
+    </NavigationContainer>
+  );
 }
