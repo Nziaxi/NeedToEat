@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
@@ -15,25 +16,85 @@ import {
   Bill,
   SearchNormal1,
   ArrowDown2,
+  ProfileCircle,
+  Wallet,
+  Edit,
 } from 'iconsax-react-native';
-import theme, {COLORS, SIZES, FONTS, categoryList} from '../../constant';
-import {menuList} from '../../constant';
+import theme, {COLORS, SIZES, FONTS} from '../../constant';
+import {categoryList, menuList} from '../../constant';
 
 // ===== App =====
 export default function Homepage() {
+  const navigation = useNavigation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+
+    navigation.setOptions({
+      tabBarStyle: isSidebarOpen
+        ? {
+            paddingBottom: 5,
+            paddingTop: 20,
+            height: 60,
+          }
+        : {display: 'none'},
+    });
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+
+    navigation.setOptions({
+      tabBarStyle: {
+        paddingBottom: 5,
+        paddingTop: 20,
+        height: 60,
+      },
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <Header />
+      <Header toggleSidebar={toggleSidebar} />
       <Content />
+      {isSidebarOpen && (
+        <TouchableWithoutFeedback onPress={closeSidebar}>
+          <View style={styles.overlay} />
+        </TouchableWithoutFeedback>
+      )}
+      {isSidebarOpen && (
+        <View style={styles.sidebar}>
+          <TouchableOpacity style={{paddingBottom: 5}} onPress={toggleSidebar}>
+            <HambergerMenu size="24" color={COLORS.white} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{flexDirection: 'row', alignItems: 'flex-end', gap: 10}}>
+            <ProfileCircle size="24" color={COLORS.white} />
+            <Text style={styles.text}>My Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{flexDirection: 'row', alignItems: 'flex-end', gap: 10}}>
+            <Wallet size="24" color={COLORS.white} />
+            <Text style={styles.text}>My Wallet</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{flexDirection: 'row', alignItems: 'flex-end', gap: 10}}
+            onPress={() => navigation.navigate('AddFood')}>
+            <Edit size="24" color={COLORS.white} />
+            <Text style={styles.text}>Add New Menu</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
 
 // ===== Header =====
-const Header = () => {
+const Header = ({toggleSidebar}) => {
   return (
     <View style={header.container}>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={toggleSidebar}>
         <HambergerMenu size="24" color={COLORS.black} />
       </TouchableOpacity>
       <Text style={header.title}>NEED TO EAT</Text>
@@ -46,6 +107,7 @@ const Header = () => {
 
 // ===== Content =====
 const Content = () => {
+  const navigation = useNavigation();
   return (
     <ScrollView>
       {/* Ads */}
@@ -58,14 +120,17 @@ const Content = () => {
       />
 
       {/* Search */}
-      <View style={search.panel}>
-        <SearchNormal1
-          size="21"
-          color={COLORS.gray}
-          style={{paddingHorizontal: 12}}
-        />
-        <Text style={search.text}>Find some food...</Text>
-      </View>
+      <TouchableWithoutFeedback
+        onPress={() => navigation.navigate('SearchPage')}>
+        <View style={search.panel}>
+          <SearchNormal1
+            size="21"
+            color={COLORS.gray}
+            style={{paddingHorizontal: 12}}
+          />
+          <Text style={search.text}>Find some food...</Text>
+        </View>
+      </TouchableWithoutFeedback>
 
       {/* Location */}
       <View style={{marginHorizontal: 25, marginTop: 40}}>
@@ -355,6 +420,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
+  },
+  sidebar: {
+    position: 'absolute',
+    width: 250,
+    height: '100%',
+    backgroundColor: COLORS.primary,
+    zIndex: 1,
+    elevation: 8,
+    paddingTop: 16,
+    paddingHorizontal: 24,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 0,
+  },
+  text: {
+    color: COLORS.white,
+    ...FONTS.h3,
+    paddingTop: 15,
   },
 });
 

@@ -1,12 +1,21 @@
 import React from 'react';
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {Homepage, Favorite, Order, FoodDetail, NotifScreen} from '../screens';
+import {
+  Homepage,
+  Favorite,
+  Order,
+  FoodDetail,
+  NotifScreen,
+  Search,
+  AddFoodForm,
+} from '../screens';
 import {Home, BagHappy, Heart, Notification} from 'iconsax-react-native';
 import theme, {COLORS} from '../constant';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
 function MainApp() {
   return (
     <Tab.Navigator
@@ -99,6 +108,26 @@ const Router = () => {
       <Stack.Screen
         name="FoodDetail"
         component={FoodDetail}
+        options={{
+          headerShown: false,
+          animationEnabled: true,
+          animationTypeForReplace: 'pop',
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+          ...TransitionPresets.SlideFromRightIOS,
+        }}
+      />
+      <Stack.Screen
+        name="SearchPage"
+        component={Search}
+        options={{
+          headerShown: false,
+          presentation: 'transparentModal',
+        }}
+      />
+      <Stack.Screen
+        name="AddFood"
+        component={AddFoodForm}
         options={{
           headerShown: false,
           animationEnabled: true,

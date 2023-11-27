@@ -137,10 +137,10 @@ export const menuList = [
     comDescription:
       'Ayam Geprek adalah ayam goreng yang dipukul dan ditekan menggunakan ulekan dan dicampur dengan sambal.',
     categories: [1, 3],
-    rating: 4.5,
+    rating: '4.5',
     price: 'Rp21.000',
-    calories: 246,
-    duration: 10,
+    calories: '246',
+    duration: '10',
     isFavorite: true,
     image:
       'https://cdns.klimg.com/merdeka.com/i/w/news/2021/11/29/1381128/content_images/670x335/20211129112557-3-cara-bikin-ayam-geprek-003-khulafa-pinta-winastya.jpg',
