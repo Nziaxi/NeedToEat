@@ -5,10 +5,11 @@ import {
   Homepage,
   Favorite,
   Order,
-  FoodDetail,
+  MenuDetail,
   NotifScreen,
   Search,
   AddFoodForm,
+  EditMenuForm,
 } from '../screens';
 import {Home, BagHappy, Heart, Notification} from 'iconsax-react-native';
 import theme, {COLORS} from '../constant';
@@ -106,8 +107,8 @@ const Router = () => {
         options={{headerShown: false}}
       />
       <Stack.Screen
-        name="FoodDetail"
-        component={FoodDetail}
+        name="MenuDetail"
+        component={MenuDetail}
         options={{
           headerShown: false,
           animationEnabled: true,
@@ -128,6 +129,18 @@ const Router = () => {
       <Stack.Screen
         name="AddFood"
         component={AddFoodForm}
+        options={{
+          headerShown: false,
+          animationEnabled: true,
+          animationTypeForReplace: 'pop',
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+          ...TransitionPresets.SlideFromRightIOS,
+        }}
+      />
+      <Stack.Screen
+        name="EditMenu"
+        component={EditMenuForm}
         options={{
           headerShown: false,
           animationEnabled: true,

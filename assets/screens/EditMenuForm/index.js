@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import {ArrowLeft2} from 'iconsax-react-native';
 import {useNavigation} from '@react-navigation/native';
@@ -13,13 +14,14 @@ import theme, {COLORS} from '../../constant';
 import {categories} from '../../constant';
 import axios from 'axios';
 
-const AddFoodForm = () => {
+const EditMenuForm = ({route}) => {
+  const {menuId} = route.params;
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [menuData, setMenuData] = useState({
     name: '',
     description: '',
     comDescription: '',
-    categories: {},
+    categories: [],
     rating: '',
     price: '',
     calories: '',
@@ -34,30 +36,42 @@ const AddFoodForm = () => {
   };
   const [image, setImage] = useState(null);
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    getMenuById();
+  }, [menuId]);
 
-  const handleChangeCategory = (categoryId, categoryName) => {
-    const isCategorySelected = selectedCategories.some(
-      categories => categories.id === categoryId,
-    );
-
-    if (isCategorySelected) {
-      const updatedCategories = selectedCategories.filter(
-        categories => categories.id !== categoryId,
+  const getMenuById = async () => {
+    try {
+      const response = await axios.get(
+        `https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList/${menuId}`,
       );
-      setSelectedCategories(updatedCategories);
-    } else {
-      setSelectedCategories([
-        ...selectedCategories,
-        {id: categoryId, name: categoryName},
-      ]);
+
+      const menuCategories = response.data.categories || [];
+
+      setMenuData({
+        name: response.data.name,
+        description: response.data.description,
+        comDescription: response.data.comDescription,
+        rating: response.data.rating,
+        price: response.data.price,
+        calories: response.data.calories,
+        duration: response.data.duration,
+      });
+      setSelectedCategories(menuCategories);
+      setImage(response.data.image);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const handleUpload = async () => {
+  const handleUpdate = async () => {
+    setLoading(true);
     try {
       await axios
-        .post(
-          'https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList',
+        .put(
+          `https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList/${menuId}`,
           {
             name: menuData.name,
             description: menuData.description,
@@ -77,9 +91,28 @@ const AddFoodForm = () => {
         .catch(function (error) {
           console.log(error);
         });
+      setLoading(false);
       navigation.navigate('Homepage');
     } catch (e) {
       console.log(e);
+    }
+  };
+
+  const handleChangeCategory = (categoryId, categoryName) => {
+    const isCategorySelected = selectedCategories.some(
+      category => category.id === categoryId,
+    );
+
+    if (isCategorySelected) {
+      const updatedCategories = selectedCategories.filter(
+        category => category.id !== categoryId,
+      );
+      setSelectedCategories(updatedCategories);
+    } else {
+      setSelectedCategories([
+        ...selectedCategories,
+        {id: categoryId, name: categoryName},
+      ]);
     }
   };
 
@@ -90,9 +123,14 @@ const AddFoodForm = () => {
           <ArrowLeft2 color={COLORS.black} variant="Linear" size={24} />
         </TouchableOpacity>
         <View style={{flex: 1, alignItems: 'center'}}>
-          <Text style={styles.title}>Add New Menu</Text>
+          <Text style={styles.title}>Edit Menu</Text>
         </View>
       </View>
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      )}
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 24,
@@ -207,7 +245,6 @@ const AddFoodForm = () => {
               )
                 ? COLORS.white
                 : COLORS.gray;
-
               return (
                 <TouchableOpacity
                   key={index}
@@ -221,15 +258,15 @@ const AddFoodForm = () => {
         </View>
       </ScrollView>
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.button} onPress={handleUpload}>
-          <Text style={styles.buttonLabel}>Add</Text>
+        <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+          <Text style={styles.buttonLabel}>Update</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 };
 
-export default AddFoodForm;
+export default EditMenuForm;
 
 const styles = StyleSheet.create({
   container: {

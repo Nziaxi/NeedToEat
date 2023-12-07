@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   FlatList,
   Image,
@@ -9,8 +9,10 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {
   HambergerMenu,
   Bill,
@@ -21,7 +23,8 @@ import {
   Edit,
 } from 'iconsax-react-native';
 import theme, {COLORS, SIZES, FONTS} from '../../constant';
-import {categoryList, menuList} from '../../constant';
+import {categoryList, menuList, categories} from '../../constant';
+import axios from 'axios';
 
 // ===== App =====
 export default function Homepage() {
@@ -108,8 +111,42 @@ const Header = ({toggleSidebar}) => {
 // ===== Content =====
 const Content = () => {
   const navigation = useNavigation();
+  const [selectedCategory, setSelectedCategory] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [menuData, setMenuData] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const getDataBlog = async () => {
+    try {
+      const response = await axios.get(
+        'https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList',
+      );
+      setMenuData(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      getDataBlog();
+      setRefreshing(false);
+    }, 1500);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      getDataBlog();
+    }, []),
+  );
+
   return (
-    <ScrollView>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }>
       {/* Ads */}
       <ImageBackground
         resizeMode="cover"
@@ -181,151 +218,7 @@ const Content = () => {
         </Text>
       </View>
 
-      <ScrollView
-        showsHorizontalScrollIndicator={false}
-        horizontal
-        contentContainerStyle={{gap: 15}}>
-        <View>
-          <View style={itemHorizontal.row}>
-            <TouchableOpacity
-              style={{...itemHorizontal.cardItem, marginLeft: 24}}>
-              <Image
-                style={itemHorizontal.cardImage}
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1626082896492-766af4eb6501?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1780&q=80',
-                }}
-              />
-              <View style={itemHorizontal.cardContent}>
-                <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                  Chicken
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={itemHorizontal.cardItem}>
-              <Image
-                style={itemHorizontal.cardImage}
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1565299715199-866c917206bb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8c3RlYWt8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
-                }}
-              />
-              <View style={itemHorizontal.cardContent}>
-                <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                  Beef
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={itemHorizontal.cardItem}>
-              <Image
-                style={itemHorizontal.cardImage}
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZnJpZWQlMjByaWNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
-                }}
-              />
-              <View style={itemHorizontal.cardContent}>
-                <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                  Rice
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={itemHorizontal.cardItem}>
-              <Image
-                style={itemHorizontal.cardImage}
-                source={{
-                  uri: 'https://plus.unsplash.com/premium_photo-1694670234085-4f38b261ce5b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZnJpZWQlMjBub29kbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
-                }}
-              />
-              <View style={itemHorizontal.cardContent}>
-                <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                  Noodles
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{...itemHorizontal.cardItem, marginRight: 24}}>
-              <Image
-                style={itemHorizontal.cardImage}
-                source={{
-                  uri: 'https://media.istockphoto.com/id/1456584076/photo/thai-deep-fried-sweet-potato-balls.webp?b=1&s=170667a&w=0&k=20&c=UHiaoKhYTSUVZyCZluR0YhGg3G60XfHSJ8wIdTTryJk=',
-                }}
-              />
-              <View style={itemHorizontal.cardContent}>
-                <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                  Snack
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          <View style={itemHorizontal.row}>
-            <TouchableOpacity
-              style={{...itemHorizontal.cardItem, marginLeft: 24}}>
-              <Image
-                style={itemHorizontal.cardImage}
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1624781748172-7151704a42b5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fG1pbGtzaGFrZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
-                }}
-              />
-              <View style={itemHorizontal.cardContent}>
-                <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                  Beverage
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={itemHorizontal.cardItem}>
-              <Image
-                style={itemHorizontal.cardImage}
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1561758033-d89a9ad46330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZmFzdCUyMGZvb2R8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
-                }}
-              />
-              <View style={itemHorizontal.cardContent}>
-                <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                  Fast Food
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={itemHorizontal.cardItem}>
-              <Image
-                style={itemHorizontal.cardImage}
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGNvZmZlZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
-                }}
-              />
-              <View style={itemHorizontal.cardContent}>
-                <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                  Coffee
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={itemHorizontal.cardItem}>
-              <Image
-                style={itemHorizontal.cardImage}
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGJha2VyeXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
-                }}
-              />
-              <View style={itemHorizontal.cardContent}>
-                <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                  Bakery
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{...itemHorizontal.cardItem, marginRight: 24}}>
-              <Image
-                style={itemHorizontal.cardImage}
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fHNlYWZvb2R8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
-                }}
-              />
-              <View style={itemHorizontal.cardContent}>
-                <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
-                  Seafood
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
+      <HorizontalScroll categories={categories} />
 
       {/* Food Menu */}
       <View>
@@ -334,9 +227,11 @@ const Content = () => {
           Good food, good mood, good day!
         </Text>
 
-        {menuList.map(item => (
-          <MenuList key={item.id} item={item} />
-        ))}
+        {loading ? (
+          <ActivityIndicator size={'large'} color={COLORS.primary} />
+        ) : (
+          menuData.map((item, index) => <MenuList item={item} key={index} />)
+        )}
       </View>
     </ScrollView>
   );
@@ -378,14 +273,92 @@ const FlatListCategory = () => {
 };
 
 // ===== Content Components (Browse cuisines) =====
+const HorizontalScroll = ({categories}) => {
+  const [highlightedItem, setHighlightedItem] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const handlePress = categoryId => {
+    setHighlightedItem(categoryId);
+  };
+
+  // Membagi data kategori menjadi dua baris
+  const halfLength = Math.ceil(categories.length / 2);
+  const firstRow = categories.slice(0, halfLength);
+  const secondRow = categories.slice(halfLength);
+
+  return (
+    <ScrollView
+      showsHorizontalScrollIndicator={false}
+      horizontal
+      contentContainerStyle={{
+        flexDirection: 'column',
+        paddingHorizontal: 25,
+      }}>
+      {/* Baris Pertama */}
+      <View style={{flexDirection: 'row'}}>
+        {firstRow.map((category, index) => (
+          <TouchableOpacity
+            key={category.id}
+            onPress={() => handlePress(category.id)}
+            style={{
+              ...itemHorizontal.cardItem,
+              marginRight: index !== firstRow.length - 1 ? 15 : 0,
+            }}>
+            <Image
+              style={{
+                ...itemHorizontal.cardImage,
+                borderWidth: highlightedItem === category.id ? 3 : 0,
+                borderColor: COLORS.primary,
+              }}
+              source={{uri: category.image}}
+            />
+            <View style={itemHorizontal.cardContent}>
+              <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
+                {category.name}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Baris Kedua */}
+      <View style={{flexDirection: 'row'}}>
+        {secondRow.map((category, index) => (
+          <TouchableOpacity
+            key={category.id}
+            onPress={() => handlePress(category.id)}
+            style={{
+              ...itemHorizontal.cardItem,
+              marginRight: index !== firstRow.length - 1 ? 15 : 0,
+            }}>
+            <Image
+              style={{
+                ...itemHorizontal.cardImage,
+                borderWidth: highlightedItem === category.id ? 3 : 0,
+                borderColor: COLORS.primary,
+              }}
+              source={{uri: category.image}}
+            />
+            <View style={itemHorizontal.cardContent}>
+              <Text style={{...itemHorizontal.cardText, fontSize: 14}}>
+                {category.name}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </ScrollView>
+  );
+};
 
 // ===== Content Components (Food Menu) =====
 const MenuList = ({item}) => {
   const navigation = useNavigation();
+
   return (
     <TouchableOpacity
       style={itemVertical.card}
-      onPress={() => navigation.navigate('FoodDetail', {foodId: item.id})}>
+      onPress={() => navigation.navigate('MenuDetail', {menuId: item.id})}>
       <Image
         source={{
           uri: item.image,

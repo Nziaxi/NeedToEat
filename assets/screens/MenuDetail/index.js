@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   Image,
   ScrollView,
@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {
@@ -15,13 +16,62 @@ import {
   Clock,
   Minus,
   Add,
+  Edit,
 } from 'iconsax-react-native';
 import theme, {COLORS, SIZES, FONTS, menuList} from '../../constant';
+import axios from 'axios';
+import ActionSheet from 'react-native-actions-sheet';
 
-const FoodDetail = ({route}) => {
-  const {foodId} = route.params;
-  const selectedFood = menuList.find(food => food.id === foodId);
+const MenuDetail = ({route}) => {
+  const {menuId} = route.params;
+  const [selectedMenu, setSelectedMenu] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
+
+  const actionSheetRef = useRef(null);
+
+  const openActionSheet = () => {
+    actionSheetRef.current?.show();
+  };
+
+  const closeActionSheet = () => {
+    actionSheetRef.current?.hide();
+  };
+
+  useEffect(() => {
+    getMenuById();
+  }, [menuId]);
+
+  const getMenuById = async () => {
+    try {
+      const response = await axios.get(
+        `https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList/${menuId}`,
+      );
+      setSelectedMenu(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const navigateEdit = () => {
+    closeActionSheet();
+    navigation.navigate('EditMenu', {menuId});
+  };
+
+  const handleDelete = async () => {
+    await axios
+      .delete(
+        `https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList/${menuId}`,
+      )
+      .then(() => {
+        closeActionSheet();
+        navigation.navigate('Homepage');
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
 
   return (
     <View style={styles.container}>
@@ -40,12 +90,19 @@ const FoodDetail = ({route}) => {
       <ScrollView>
         {/* Image */}
         <View style={styles.content}>
-          <Image
-            source={{
-              uri: selectedFood.image,
-            }}
-            style={styles.card}
-          />
+          {selectedMenu?.image ? (
+            <Image
+              source={{
+                uri: selectedMenu?.image,
+                headers: {Authorization: 'someAuthToken'},
+              }}
+              style={styles.card}
+            />
+          ) : (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+            </View>
+          )}
         </View>
         {/* Title & Description */}
         <View>
@@ -57,7 +114,7 @@ const FoodDetail = ({route}) => {
               color: COLORS.black,
               ...FONTS.h1,
             }}>
-            {selectedFood.name}
+            {selectedMenu?.name}
           </Text>
           <Text
             style={{
@@ -68,7 +125,7 @@ const FoodDetail = ({route}) => {
               textAlign: 'justify',
               ...FONTS.body3,
             }}>
-            {selectedFood.comDescription}
+            {selectedMenu?.comDescription}
           </Text>
         </View>
 
@@ -102,7 +159,7 @@ const FoodDetail = ({route}) => {
                 color: COLORS.black,
                 top: 2,
               }}>
-              {selectedFood.rating}
+              {selectedMenu?.rating}
             </Text>
           </View>
 
@@ -126,7 +183,7 @@ const FoodDetail = ({route}) => {
                 top: 2,
                 left: 2,
               }}>
-              {selectedFood.duration} Mins
+              {selectedMenu?.duration} Mins
             </Text>
           </View>
           {/* Calories */}
@@ -155,7 +212,7 @@ const FoodDetail = ({route}) => {
                 top: 2,
                 left: 2,
               }}>
-              {selectedFood.calories} kal
+              {selectedMenu?.calories} kal
             </Text>
           </View>
         </View>
@@ -230,7 +287,9 @@ const FoodDetail = ({route}) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-
+      <TouchableOpacity style={styles.floatingButton} onPress={openActionSheet}>
+        <Edit color={COLORS.white} variant="Linear" size={20} />
+      </TouchableOpacity>
       {/* Footer */}
       <View style={styles.footer}>
         <View
@@ -284,11 +343,71 @@ const FoodDetail = ({route}) => {
           </Text>
         </TouchableOpacity>
       </View>
+      <ActionSheet
+        ref={actionSheetRef}
+        containerStyle={{
+          borderTopLeftRadius: 25,
+          borderTopRightRadius: 25,
+        }}
+        indicatorStyle={{
+          width: 100,
+        }}
+        gestureEnabled={true}
+        defaultOverlayOpacity={0.3}>
+        <TouchableOpacity
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 15,
+          }}
+          onPress={navigateEdit}>
+          <Text
+            style={{
+              fontFamily: 'Poppins-Medium',
+              color: COLORS.black,
+              fontSize: 18,
+            }}>
+            Edit
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 15,
+          }}
+          onPress={handleDelete}>
+          <Text
+            style={{
+              fontFamily: 'Poppins-Medium',
+              color: COLORS.black,
+              fontSize: 18,
+            }}>
+            Delete
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 15,
+          }}
+          onPress={closeActionSheet}>
+          <Text
+            style={{
+              fontFamily: 'Poppins-Medium',
+              color: 'red',
+              fontSize: 18,
+            }}>
+            Cancel
+          </Text>
+        </TouchableOpacity>
+      </ActionSheet>
     </View>
   );
 };
 
-export default FoodDetail;
+export default MenuDetail;
 
 const styles = StyleSheet.create({
   container: {
@@ -331,5 +450,22 @@ const styles = StyleSheet.create({
     borderColor: COLORS.lightGray1,
     borderWidth: 1,
     height: 100,
+  },
+  floatingButton: {
+    backgroundColor: COLORS.primary,
+    padding: 15,
+    position: 'absolute',
+    bottom: 125,
+    right: 24,
+    borderRadius: 10,
+    shadowColor: COLORS.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+
+    elevation: 8,
   },
 });
