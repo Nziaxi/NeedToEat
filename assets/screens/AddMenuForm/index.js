@@ -6,15 +6,23 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
-import {ArrowLeft2} from 'iconsax-react-native';
+import {ArrowLeft2, AddSquare, Add} from 'iconsax-react-native';
+import FastImage from 'react-native-fast-image';
 import {useNavigation} from '@react-navigation/native';
 import theme, {COLORS} from '../../constant';
 import {categories} from '../../constant';
-import axios from 'axios';
+import ImagePicker from 'react-native-image-crop-picker';
+import storage from '@react-native-firebase/storage';
+import firestore from '@react-native-firebase/firestore';
 
 const AddFoodForm = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
+
   const [menuData, setMenuData] = useState({
     name: '',
     description: '',
@@ -26,14 +34,13 @@ const AddFoodForm = () => {
     duration: '',
     isFavorite: false,
   });
+
   const handleChange = (key, value) => {
     setMenuData({
       ...menuData,
       [key]: value,
     });
   };
-  const [image, setImage] = useState(null);
-  const navigation = useNavigation();
 
   const handleChangeCategory = (categoryId, categoryName) => {
     const isCategorySelected = selectedCategories.some(
@@ -53,33 +60,49 @@ const AddFoodForm = () => {
     }
   };
 
+  const handleImagePick = async () => {
+    ImagePicker.openPicker({
+      width: 1920,
+      height: 1920,
+      cropping: true,
+    })
+      .then(image => {
+        console.log(image);
+        setImage(image.path);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
   const handleUpload = async () => {
+    let filename = image.substring(image.lastIndexOf('/') + 1);
+    const extension = filename.split('.').pop();
+    const name = filename.split('.').slice(0, -1).join('.');
+    filename = name + Date.now() + '.' + extension;
+    const reference = storage().ref(`menuimages/${filename}`);
+
+    setLoading(true);
     try {
-      await axios
-        .post(
-          'https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList',
-          {
-            name: menuData.name,
-            description: menuData.description,
-            comDescription: menuData.comDescription,
-            categories: selectedCategories,
-            rating: menuData.rating,
-            price: menuData.price,
-            calories: menuData.calories,
-            duration: menuData.duration,
-            isFavorite: menuData.isFavorite,
-            image,
-          },
-        )
-        .then(function (response) {
-          console.log(response);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+      await reference.putFile(image);
+      const url = await reference.getDownloadURL();
+      await firestore().collection('menu').add({
+        name: menuData.name,
+        description: menuData.description,
+        comDescription: menuData.comDescription,
+        categories: selectedCategories,
+        rating: menuData.rating,
+        price: menuData.price,
+        calories: menuData.calories,
+        duration: menuData.duration,
+        isFavorite: menuData.isFavorite,
+        image: url,
+      });
+      setLoading(false);
+      console.log('Menu added!');
       navigation.navigate('Homepage');
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -93,6 +116,11 @@ const AddFoodForm = () => {
           <Text style={styles.title}>Add New Menu</Text>
         </View>
       </View>
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      )}
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 24,
@@ -176,16 +204,58 @@ const AddFoodForm = () => {
             cursorColor={COLORS.primary}
           />
         </View>
-        <View style={[textInput.borderDashed]}>
-          <TextInput
-            placeholder="Image"
-            value={image}
-            onChangeText={text => setImage(text)}
-            placeholderTextColor={COLORS.gray2}
-            style={textInput.content}
-            cursorColor={COLORS.primary}
-          />
-        </View>
+        {image ? (
+          <View style={{position: 'relative'}}>
+            <FastImage
+              style={{width: '100%', height: 127, borderRadius: 5}}
+              source={{
+                uri: image,
+                headers: {Authorization: 'someAuthToken'},
+                priority: FastImage.priority.high,
+              }}
+              resizeMode={FastImage.resizeMode.cover}
+            />
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: -5,
+                right: -5,
+                backgroundColor: COLORS.primary,
+                borderRadius: 25,
+              }}
+              onPress={() => setImage(null)}>
+              <Add
+                size={20}
+                variant="Linear"
+                color={COLORS.white}
+                style={{transform: [{rotate: '45deg'}]}}
+              />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity onPress={handleImagePick}>
+            <View
+              style={[
+                textInput.borderDashed,
+                {
+                  gap: 10,
+                  paddingVertical: 30,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                },
+              ]}>
+              <AddSquare color={COLORS.gray2} variant="Linear" size={32} />
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Regular',
+                  fontSize: 12,
+                  color: COLORS.gray2,
+                }}>
+                Upload Image
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
         <View style={[textInput.borderDashed]}>
           <Text
             style={{

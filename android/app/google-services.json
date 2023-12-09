@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "628161319118",
+    "project_id": "needtoeat-ef9d7",
+    "storage_bucket": "needtoeat-ef9d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:628161319118:android:6b352999c55e17819a809f",
+        "android_client_info": {
+          "package_name": "com.needtoeat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAp72hTlZ8Nan8k-rS6z9ekBZaq_24ZQ3Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

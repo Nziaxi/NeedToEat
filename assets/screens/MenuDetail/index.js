@@ -18,8 +18,10 @@ import {
   Add,
   Edit,
 } from 'iconsax-react-native';
-import theme, {COLORS, SIZES, FONTS, menuList} from '../../constant';
-import axios from 'axios';
+import FastImage from 'react-native-fast-image';
+import theme, {COLORS, SIZES, FONTS} from '../../constant';
+import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
 import ActionSheet from 'react-native-actions-sheet';
 
 const MenuDetail = ({route}) => {
@@ -39,20 +41,21 @@ const MenuDetail = ({route}) => {
   };
 
   useEffect(() => {
-    getMenuById();
+    const subscriber = firestore()
+      .collection('menu')
+      .doc(menuId)
+      .onSnapshot(documentSnapshot => {
+        const menuData = documentSnapshot.data();
+        if (menuData) {
+          console.log('Menu data: ', menuData);
+          setSelectedMenu(menuData);
+        } else {
+          console.log(`Menu with ID ${menuId} not found.`);
+        }
+      });
+    setLoading(false);
+    return () => subscriber();
   }, [menuId]);
-
-  const getMenuById = async () => {
-    try {
-      const response = await axios.get(
-        `https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList/${menuId}`,
-      );
-      setSelectedMenu(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const navigateEdit = () => {
     closeActionSheet();
@@ -60,17 +63,27 @@ const MenuDetail = ({route}) => {
   };
 
   const handleDelete = async () => {
-    await axios
-      .delete(
-        `https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList/${menuId}`,
-      )
-      .then(() => {
-        closeActionSheet();
-        navigation.navigate('Homepage');
-      })
-      .catch(error => {
-        console.error(error);
-      });
+    setLoading(true);
+    try {
+      await firestore()
+        .collection('menu')
+        .doc(menuId)
+        .delete()
+        .then(() => {
+          console.log('Menu deleted!');
+        });
+      if (selectedMenu?.image) {
+        const imageRef = storage().refFromURL(selectedMenu?.image);
+        await imageRef.delete();
+      }
+      console.log('Menu deleted!');
+      closeActionSheet();
+      setSelectedMenu(null);
+      setLoading(false);
+      navigation.navigate('Homepage');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -87,206 +100,214 @@ const MenuDetail = ({route}) => {
       </View>
 
       {/* Content */}
-      <ScrollView>
-        {/* Image */}
-        <View style={styles.content}>
-          {selectedMenu?.image ? (
-            <Image
-              source={{
-                uri: selectedMenu?.image,
-                headers: {Authorization: 'someAuthToken'},
-              }}
-              style={styles.card}
-            />
-          ) : (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color={COLORS.primary} />
+      {loading ? (
+        <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+          <ActivityIndicator size={'large'} color={COLORS.primary} />
+        </View>
+      ) : (
+        <ScrollView>
+          {/* Image */}
+          <View style={styles.content}>
+            {selectedMenu?.image ? (
+              <FastImage
+                source={{
+                  uri: selectedMenu?.image,
+                  headers: {Authorization: 'someAuthToken'},
+                  priority: FastImage.priority.high,
+                }}
+                resizeMode={FastImage.resizeMode.cover}
+                style={styles.card}
+              />
+            ) : (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color={COLORS.primary} />
+              </View>
+            )}
+          </View>
+          {/* Title & Description */}
+          <View>
+            <Text
+              style={{
+                top: 15,
+                paddingHorizontal: 20,
+                alignItems: 'center',
+                color: COLORS.black,
+                ...FONTS.h1,
+              }}>
+              {selectedMenu?.name}
+            </Text>
+            <Text
+              style={{
+                top: 18,
+                paddingHorizontal: 20,
+                alignItems: 'center',
+                color: COLORS.darkGray,
+                textAlign: 'justify',
+                ...FONTS.body3,
+              }}>
+              {selectedMenu?.comDescription}
+            </Text>
+          </View>
+
+          {/* Ratings, Duration & Calories */}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginTop: SIZES.padding,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+            }}>
+            {/* Ratings */}
+            <View
+              style={{
+                height: 35,
+                width: 75,
+                borderRadius: 7,
+                marginTop: 10,
+                paddingHorizontal: 10,
+                paddingRight: 11,
+                backgroundColor: COLORS.primary,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <Star1 size="24" color={COLORS.black} />
+              <Text
+                style={{
+                  fontFamily: 'Poppins-SemiBold',
+                  color: COLORS.black,
+                  top: 2,
+                }}>
+                {selectedMenu?.rating}
+              </Text>
             </View>
-          )}
-        </View>
-        {/* Title & Description */}
-        <View>
-          <Text
-            style={{
-              top: 15,
-              paddingHorizontal: 20,
-              alignItems: 'center',
-              color: COLORS.black,
-              ...FONTS.h1,
-            }}>
-            {selectedMenu?.name}
-          </Text>
-          <Text
-            style={{
-              top: 18,
-              paddingHorizontal: 20,
-              alignItems: 'center',
-              color: COLORS.darkGray,
-              textAlign: 'justify',
-              ...FONTS.body3,
-            }}>
-            {selectedMenu?.comDescription}
-          </Text>
-        </View>
 
-        {/* Ratings, Duration & Calories */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: SIZES.padding,
-            paddingHorizontal: 20,
-            paddingVertical: 10,
-          }}>
-          {/* Ratings */}
-          <View
-            style={{
-              height: 35,
-              width: 75,
-              borderRadius: 7,
-              marginTop: 10,
-              paddingHorizontal: 10,
-              paddingRight: 11,
-              backgroundColor: COLORS.primary,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-            <Star1 size="24" color={COLORS.black} />
-            <Text
+            {/* Duration */}
+            <View
               style={{
-                fontFamily: 'Poppins-SemiBold',
-                color: COLORS.black,
-                top: 2,
+                height: 35,
+                width: 100,
+                borderRadius: 7,
+                marginTop: 10,
+                paddingHorizontal: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}>
-              {selectedMenu?.rating}
-            </Text>
+              <Clock size="24" color={COLORS.black} />
+              <Text
+                style={{
+                  fontFamily: 'Poppins-SemiBold',
+                  color: COLORS.black,
+                  top: 2,
+                  left: 2,
+                }}>
+                {selectedMenu?.duration} Mins
+              </Text>
+            </View>
+            {/* Calories */}
+            <View
+              style={{
+                height: 35,
+                width: 80,
+                left: -5,
+                borderRadius: 7,
+                marginTop: 10,
+                paddingHorizontal: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <Image
+                source={{
+                  uri: 'https://raw.githubusercontent.com/byprogrammers/LCRN16-food-delivery-app-lite-starter/master/assets/icons/calories.png',
+                }}
+                style={{width: 22, height: 22}}
+              />
+              <Text
+                style={{
+                  fontFamily: 'Poppins-SemiBold',
+                  color: COLORS.black,
+                  top: 2,
+                  left: 2,
+                }}>
+                {selectedMenu?.calories} kal
+              </Text>
+            </View>
           </View>
-
-          {/* Duration */}
-          <View
-            style={{
-              height: 35,
-              width: 100,
-              borderRadius: 7,
-              marginTop: 10,
-              paddingHorizontal: 10,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-            <Clock size="24" color={COLORS.black} />
+          <View style={styles.size}>
             <Text
               style={{
-                fontFamily: 'Poppins-SemiBold',
+                ...FONTS.h3,
                 color: COLORS.black,
-                top: 2,
-                left: 2,
               }}>
-              {selectedMenu?.duration} Mins
+              Sizes:
             </Text>
+            <TouchableOpacity
+              style={{
+                height: 50,
+                width: 50,
+                borderRadius: 7,
+                backgroundColor: COLORS.primary,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                marginLeft: 20,
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Regular',
+                  fontSize: 32,
+                  color: COLORS.white,
+                  top: 1,
+                }}>
+                S
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                height: 50,
+                width: 50,
+                borderRadius: 7,
+                borderWidth: 2,
+                borderColor: COLORS.lightGray1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                marginLeft: 20,
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Regular',
+                  fontSize: 32,
+                  color: COLORS.lightGray1,
+                }}>
+                M
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                height: 50,
+                width: 50,
+                borderRadius: 7,
+                borderWidth: 2,
+                borderColor: COLORS.lightGray1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                marginLeft: 20,
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Regular',
+                  fontSize: 32,
+                  color: COLORS.lightGray1,
+                  top: 1,
+                }}>
+                L
+              </Text>
+            </TouchableOpacity>
           </View>
-          {/* Calories */}
-          <View
-            style={{
-              height: 35,
-              width: 80,
-              left: -5,
-              borderRadius: 7,
-              marginTop: 10,
-              paddingHorizontal: 10,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-            <Image
-              source={{
-                uri: 'https://raw.githubusercontent.com/byprogrammers/LCRN16-food-delivery-app-lite-starter/master/assets/icons/calories.png',
-              }}
-              style={{width: 22, height: 22}}
-            />
-            <Text
-              style={{
-                fontFamily: 'Poppins-SemiBold',
-                color: COLORS.black,
-                top: 2,
-                left: 2,
-              }}>
-              {selectedMenu?.calories} kal
-            </Text>
-          </View>
-        </View>
-        <View style={styles.size}>
-          <Text
-            style={{
-              ...FONTS.h3,
-              color: COLORS.black,
-            }}>
-            Sizes:
-          </Text>
-          <TouchableOpacity
-            style={{
-              height: 50,
-              width: 50,
-              borderRadius: 7,
-              backgroundColor: COLORS.primary,
-              flexDirection: 'row',
-              justifyContent: 'center',
-              marginLeft: 20,
-            }}>
-            <Text
-              style={{
-                fontFamily: 'Poppins-Regular',
-                fontSize: 32,
-                color: COLORS.white,
-                top: 1,
-              }}>
-              S
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              height: 50,
-              width: 50,
-              borderRadius: 7,
-              borderWidth: 2,
-              borderColor: COLORS.lightGray1,
-              flexDirection: 'row',
-              justifyContent: 'center',
-              marginLeft: 20,
-            }}>
-            <Text
-              style={{
-                fontFamily: 'Poppins-Regular',
-                fontSize: 32,
-                color: COLORS.lightGray1,
-              }}>
-              M
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              height: 50,
-              width: 50,
-              borderRadius: 7,
-              borderWidth: 2,
-              borderColor: COLORS.lightGray1,
-              flexDirection: 'row',
-              justifyContent: 'center',
-              marginLeft: 20,
-            }}>
-            <Text
-              style={{
-                fontFamily: 'Poppins-Regular',
-                fontSize: 32,
-                color: COLORS.lightGray1,
-                top: 1,
-              }}>
-              L
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      )}
       <TouchableOpacity style={styles.floatingButton} onPress={openActionSheet}>
         <Edit color={COLORS.white} variant="Linear" size={20} />
       </TouchableOpacity>

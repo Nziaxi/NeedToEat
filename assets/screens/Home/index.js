@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {
   FlatList,
   Image,
@@ -23,8 +23,8 @@ import {
   Edit,
 } from 'iconsax-react-native';
 import theme, {COLORS, SIZES, FONTS} from '../../constant';
-import {categoryList, menuList, categories} from '../../constant';
-import axios from 'axios';
+import {categoryList, categories} from '../../constant';
+import firestore from '@react-native-firebase/firestore';
 
 // ===== App =====
 export default function Homepage() {
@@ -116,31 +116,41 @@ const Content = () => {
   const [menuData, setMenuData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const getDataBlog = async () => {
-    try {
-      const response = await axios.get(
-        'https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList',
-      );
-      setMenuData(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  useEffect(() => {
+    const subscriber = firestore()
+      .collection('menu')
+      .onSnapshot(querySnapshot => {
+        const menus = [];
+        querySnapshot.forEach(documentSnapshot => {
+          menus.push({
+            ...documentSnapshot.data(),
+            id: documentSnapshot.id,
+          });
+        });
+        setMenuData(menus);
+        setLoading(false);
+      });
+    return () => subscriber();
+  }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
-      getDataBlog();
+      firestore()
+        .collection('menu')
+        .onSnapshot(querySnapshot => {
+          const menus = [];
+          querySnapshot.forEach(documentSnapshot => {
+            menus.push({
+              ...documentSnapshot.data(),
+              id: documentSnapshot.id,
+            });
+          });
+          setBlogData(menus);
+        });
       setRefreshing(false);
     }, 1500);
   }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      getDataBlog();
-    }, []),
-  );
 
   return (
     <ScrollView

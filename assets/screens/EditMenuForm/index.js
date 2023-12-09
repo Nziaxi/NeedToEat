@@ -8,15 +8,23 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import {ArrowLeft2} from 'iconsax-react-native';
+import {ArrowLeft2, AddSquare, Add} from 'iconsax-react-native';
+import FastImage from 'react-native-fast-image';
 import {useNavigation} from '@react-navigation/native';
 import theme, {COLORS} from '../../constant';
 import {categories} from '../../constant';
-import axios from 'axios';
+import ImagePicker from 'react-native-image-crop-picker';
+import storage from '@react-native-firebase/storage';
+import firestore from '@react-native-firebase/firestore';
 
 const EditMenuForm = ({route}) => {
   const {menuId} = route.params;
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [image, setImage] = useState(null);
+  const [oldImage, setOldImage] = useState(null);
+  const navigation = useNavigation();
+  const [loading, setLoading] = useState(true);
+
   const [menuData, setMenuData] = useState({
     name: '',
     description: '',
@@ -28,73 +36,97 @@ const EditMenuForm = ({route}) => {
     duration: '',
     isFavorite: false,
   });
+
   const handleChange = (key, value) => {
     setMenuData({
       ...menuData,
       [key]: value,
     });
   };
-  const [image, setImage] = useState(null);
-  const navigation = useNavigation();
-  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    getMenuById();
-  }, [menuId]);
+    const subscriber = firestore()
+      .collection('menu')
+      .doc(menuId)
+      .onSnapshot(documentSnapshot => {
+        const menuData = documentSnapshot.data();
+        if (menuData) {
+          console.log('Menu data: ', menuData);
 
-  const getMenuById = async () => {
-    try {
-      const response = await axios.get(
-        `https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList/${menuId}`,
-      );
+          const menuCategories = menuData.categories || [];
 
-      const menuCategories = response.data.categories || [];
-
-      setMenuData({
-        name: response.data.name,
-        description: response.data.description,
-        comDescription: response.data.comDescription,
-        rating: response.data.rating,
-        price: response.data.price,
-        calories: response.data.calories,
-        duration: response.data.duration,
-      });
-      setSelectedCategories(menuCategories);
-      setImage(response.data.image);
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleUpdate = async () => {
-    setLoading(true);
-    try {
-      await axios
-        .put(
-          `https://65716495d61ba6fcc01261ec.mockapi.io/needtoeat/menuList/${menuId}`,
-          {
+          setMenuData({
             name: menuData.name,
             description: menuData.description,
             comDescription: menuData.comDescription,
-            categories: selectedCategories,
             rating: menuData.rating,
             price: menuData.price,
             calories: menuData.calories,
             duration: menuData.duration,
             isFavorite: menuData.isFavorite,
-            image,
-          },
-        )
-        .then(function (response) {
-          console.log(response);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+          });
+          setSelectedCategories(menuCategories);
+          setOldImage(menuData.image);
+          setImage(menuData.image);
+          setLoading(false);
+        } else {
+          console.log(`Menu with ID ${menuId} not found.`);
+        }
+      });
+    setLoading(false);
+    return () => subscriber();
+  }, [menuId]);
+
+  const handleImagePick = async () => {
+    ImagePicker.openPicker({
+      width: 1920,
+      height: 1080,
+      cropping: true,
+    })
+      .then(image => {
+        console.log(image);
+        setImage(image.path);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  const handleUpdate = async () => {
+    setLoading(true);
+    let filename = image.substring(image.lastIndexOf('/') + 1);
+    const extension = filename.split('.').pop();
+    const name = filename.split('.').slice(0, -1).join('.');
+    filename = name + Date.now() + '.' + extension;
+    const reference = storage().ref(`menuimages/${filename}`);
+    try {
+      if (image !== oldImage && oldImage) {
+        const oldImageRef = storage().refFromURL(oldImage);
+        await oldImageRef.delete();
+      }
+      if (image !== oldImage) {
+        await reference.putFile(image);
+      }
+      const url =
+        image !== oldImage ? await reference.getDownloadURL() : oldImage;
+      await firestore().collection('menu').doc(menuId).update({
+        name: menuData.name,
+        description: menuData.description,
+        comDescription: menuData.comDescription,
+        categories: selectedCategories,
+        rating: menuData.rating,
+        price: menuData.price,
+        calories: menuData.calories,
+        duration: menuData.duration,
+        isFavorite: menuData.isFavorite,
+        image: url,
+      });
       setLoading(false);
-      navigation.navigate('Homepage');
-    } catch (e) {
-      console.log(e);
+      console.log('Menu Updated!');
+      navigation.navigate('MenuDetail', {menuId});
+    } catch (error) {
+      console.error('Error updating menu:', error);
+      console.log('Menu data: ', menuData);
     }
   };
 
@@ -214,16 +246,58 @@ const EditMenuForm = ({route}) => {
             cursorColor={COLORS.primary}
           />
         </View>
-        <View style={[textInput.borderDashed]}>
-          <TextInput
-            placeholder="Image"
-            value={image}
-            onChangeText={text => setImage(text)}
-            placeholderTextColor={COLORS.gray2}
-            style={textInput.content}
-            cursorColor={COLORS.primary}
-          />
-        </View>
+        {image ? (
+          <View style={{position: 'relative'}}>
+            <FastImage
+              style={{width: '100%', height: 127, borderRadius: 5}}
+              source={{
+                uri: image,
+                headers: {Authorization: 'someAuthToken'},
+                priority: FastImage.priority.high,
+              }}
+              resizeMode={FastImage.resizeMode.cover}
+            />
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: -5,
+                right: -5,
+                backgroundColor: COLORS.primary,
+                borderRadius: 25,
+              }}
+              onPress={() => setImage(null)}>
+              <Add
+                size={20}
+                variant="Linear"
+                color={COLORS.white}
+                style={{transform: [{rotate: '45deg'}]}}
+              />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity onPress={handleImagePick}>
+            <View
+              style={[
+                textInput.borderDashed,
+                {
+                  gap: 10,
+                  paddingVertical: 30,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                },
+              ]}>
+              <AddSquare color={COLORS.gray2} variant="Linear" size={32} />
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Regular',
+                  fontSize: 12,
+                  color: COLORS.gray2,
+                }}>
+                Upload Image
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
         <View style={[textInput.borderDashed]}>
           <Text
             style={{
