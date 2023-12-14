@@ -12,24 +12,27 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
+import FastImage from 'react-native-fast-image';
 import {
   HambergerMenu,
   Bill,
   SearchNormal1,
   ArrowDown2,
-  ProfileCircle,
-  Wallet,
   Edit,
+  LogoutCurve,
 } from 'iconsax-react-native';
 import theme, {COLORS, SIZES, FONTS} from '../../constant';
 import {categoryList, categories} from '../../constant';
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ===== App =====
 export default function Homepage() {
   const navigation = useNavigation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [profileData, setProfileData] = useState(null);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -57,6 +60,45 @@ export default function Homepage() {
     });
   };
 
+  useEffect(() => {
+    const user = auth().currentUser;
+
+    const fetchProfileData = () => {
+      try {
+        const user = auth().currentUser;
+        if (user) {
+          const userId = user.uid;
+          const userRef = firestore().collection('users').doc(userId);
+
+          const unsubscribeProfile = userRef.onSnapshot(doc => {
+            if (doc.exists) {
+              const userData = doc.data();
+              setProfileData(userData);
+            } else {
+              console.error('User document not found.');
+            }
+          });
+
+          return () => {
+            unsubscribeProfile();
+          };
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    };
+    fetchProfileData();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await auth().signOut();
+      await AsyncStorage.removeItem('userData');
+      navigation.replace('Login');
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <View style={styles.container}>
       <Header toggleSidebar={toggleSidebar} />
@@ -73,19 +115,41 @@ export default function Homepage() {
           </TouchableOpacity>
           <TouchableOpacity
             style={{flexDirection: 'row', alignItems: 'flex-end', gap: 10}}>
-            <ProfileCircle size="24" color={COLORS.white} />
-            <Text style={styles.text}>My Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{flexDirection: 'row', alignItems: 'flex-end', gap: 10}}>
-            <Wallet size="24" color={COLORS.white} />
-            <Text style={styles.text}>My Wallet</Text>
+            <FastImage
+              style={styles.pic}
+              source={{
+                uri: profileData?.photoUrl,
+                headers: {Authorization: 'someAuthToken'},
+                priority: FastImage.priority.high,
+              }}
+              resizeMode={FastImage.resizeMode.cover}
+            />
+            <View>
+              <Text style={{...styles.text, fontSize: 24}}>
+                {profileData?.fullName && profileData?.fullName.split(' ')[0]}
+              </Text>
+              <Text
+                style={{
+                  ...styles.text,
+                  fontSize: 14,
+                  fontFamily: 'Poppins-Regular',
+                  paddingTop: 0,
+                }}>
+                My Wallet: ${profileData?.wallet}
+              </Text>
+            </View>
           </TouchableOpacity>
           <TouchableOpacity
             style={{flexDirection: 'row', alignItems: 'flex-end', gap: 10}}
             onPress={() => navigation.navigate('AddFood')}>
             <Edit size="24" color={COLORS.white} />
             <Text style={styles.text}>Add New Menu</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{flexDirection: 'row', alignItems: 'flex-end', gap: 10}}
+            onPress={handleLogout}>
+            <LogoutCurve size="24" color={COLORS.white} />
+            <Text style={styles.text}>Logout</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -427,6 +491,11 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     ...FONTS.h3,
     paddingTop: 15,
+  },
+  pic: {
+    borderRadius: 4,
+    width: 50,
+    height: 50,
   },
 });
 

@@ -6,6 +6,9 @@ import NotifScreen from './Notification';
 import Search from './Search';
 import AddFoodForm from './AddMenuForm';
 import EditMenuForm from './EditMenuForm';
+import SplashScreen from './SplashScreen';
+import Register from './Register';
+import Login from './Login';
 
 export {
   Homepage,
@@ -16,4 +19,7 @@ export {
   Search,
   AddFoodForm,
   EditMenuForm,
+  SplashScreen,
+  Register,
+  Login,
 };

@@ -3,7 +3,7 @@ const {width, height} = Dimensions.get('window');
 
 export const COLORS = {
   primary: '#FFA133', // American Orange
-  transparentPrimray: 'rgba(255, 204, 2, 0.4)',
+  transparentPrimary: 'rgba(255, 204, 2, 0.5)',
   green: '#27AE60',
   red: '#FF1717',
   blue: '#0064C0',
